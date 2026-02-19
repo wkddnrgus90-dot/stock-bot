@@ -1,17 +1,11 @@
 """
-봇 실행 전 설정 검사 스크립트
-- .env 환경 변수 확인
-- google-credentials.json 확인
-- 각 API 연결 테스트 (Gemini, Telegram, Google Sheets)
-
-사용법: python setup_check.py
+봇 실행 전 설정 검사 스크립트 v2.1
+버그수정: _get_client_email() 함수를 상단으로 이동
 """
 
 import json
 import os
-import sys
 from pathlib import Path
-
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -29,6 +23,15 @@ def check(label: str, ok: bool, detail: str = "") -> bool:
     if not ok:
         errors.append(label)
     return ok
+
+
+# 버그수정: 함수를 상단으로 이동 (하단에 정의 후 상단에서 호출하던 NameError 수정)
+def _get_client_email(creds_path: Path) -> str:
+    try:
+        with open(creds_path, "r") as f:
+            return json.load(f).get("client_email", "확인 불가")
+    except Exception:
+        return "확인 불가"
 
 
 # ──────────────────────────────────────────────
@@ -122,14 +125,6 @@ elif not creds_path.exists():
     print(f"{WARN} google-credentials.json 없음 — 건너뜀")
 else:
     print(f"{WARN} GOOGLE_SHEET_ID 미설정 — 건너뜀")
-
-
-def _get_client_email(creds_path: Path) -> str:
-    try:
-        with open(creds_path, "r") as f:
-            return json.load(f).get("client_email", "확인 불가")
-    except Exception:
-        return "확인 불가"
 
 
 # ──────────────────────────────────────────────
